@@ -22,9 +22,12 @@ class CrawlerConfig:
     
     user_agent: str = "RedditCrawler/1.0 (ML Research Project; Contact: your@email.com)"
     
-    # MongoDB settings
-    mongo_uri: str = field(default_factory=lambda: os.getenv("MONGO_URI", "mongodb://localhost:27017"))
-    database_name: str = "reddit_crawler"
+    # PostgreSQL settings
+    postgres_host: str = field(default_factory=lambda: os.getenv("POSTGRES_HOST", "localhost"))
+    postgres_port: int = field(default_factory=lambda: int(os.getenv("POSTGRES_PORT", "5432")))
+    postgres_user: str = field(default_factory=lambda: os.getenv("POSTGRES_USER", "postgres"))
+    postgres_password: str = field(default_factory=lambda: os.getenv("POSTGRES_PASSWORD", "postgres"))
+    postgres_database: str = field(default_factory=lambda: os.getenv("POSTGRES_DATABASE", "reddit_crawler"))
     
     update_existing: bool = True  # Update posts/comments if they changed
     fetch_all_comments: bool = True  # Fetch full comment trees
@@ -33,6 +36,11 @@ class CrawlerConfig:
     # Logging
     log_level: str = "INFO"
     log_file: Optional[str] = "crawler.log"
+    
+    @property
+    def postgres_dsn(self) -> str:
+        """Get PostgreSQL connection string."""
+        return f"postgresql://{self.postgres_user}:{self.postgres_password}@{self.postgres_host}:{self.postgres_port}/{self.postgres_database}"
 
 
 @dataclass
@@ -45,4 +53,3 @@ class SubredditTarget:
 
 # Default
 default_config = CrawlerConfig()
-

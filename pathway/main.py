@@ -1,20 +1,11 @@
 import pathway as pw
+import os
 from schema import RedditSentimentSchema
 
-print("pathway version", pw.__version__)
+print("Pathway version:", pw.__version__)
+print(os.getcwd())
 
-
-events = pw.io.jsonlines.read(
-    path="../data_stream/",
-    schema=RedditSentimentSchema,
-    mode="streaming",
-    with_metadata=True,
-)
-
-# IMPORTANT: stable IDs → only new rows are printed
-events = events.with_id_from(events.event_id)
-
-# Print ONLY incremental updates
-pw.debug.compute_and_print(events)
-
+table = pw.io.jsonlines.read("./pathway/data_stream/", schema=RedditSentimentSchema)
+pw.io.csv.write(table, "./output.csv")
+pw.debug.compute_and_print(table)
 pw.run()

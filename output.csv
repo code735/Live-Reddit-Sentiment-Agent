@@ -1,0 +1,6 @@
+"event_id","post_id","event_type","ticker","text","sentiment","confidence","observed_at","time","diff"
+"6","p5","upsert","TSLA","New test","positive","0.7","2026-01-01T12:10:00Z","1767252990530","4"
+"2","p2","upsert","TSLA","Valuation feels stretched","negative","0.81","2026-01-01T10:01:00Z","1767252990530","1"
+"1","p1","upsert","TSLA","TSLA looks strong after earnings","positive","0.92","2026-01-01T10:00:00Z","1767252990530","1"
+"6","p5","upsert","TSLA","New test","positive","0.7","2026-01-01T12:10:00Z","1767253023528","1"
+"6","p5","upsert","TSLA","New test","positive","0.7","2026-01-01T12:10:00Z","1767253122528","1"

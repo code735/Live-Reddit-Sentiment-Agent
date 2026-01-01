@@ -41,7 +41,7 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-packages = ["agent", "crawler", "pathway", "sentiment"]
+packages = ["agent", "crawler", "pathway_streams", "sentiment"]
 
 [tool.ruff]
 line-length = 88

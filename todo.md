@@ -3,15 +3,7 @@
   1. Project flow should be ready.. i.e. crawler and sentiment model should be integrated
   2. agent functions should be ready by today.
   3. setup the pathway live table ingestion. and get the data stream in json..
+  4. after getting the data in output.jsonl.. with ticker agent can be used to remove noise ( will filter the actual ticker of that particular stock)
 
-
-
-  {
-  "post_id": "derived_from_url_or_hash",
-  "ticker": "TSLA",
-  "text": "...",
-  "created_at": "...",
-  "source": "reddit",
-  "url": "...",
-  sentiment_score: 2.3
-}
+2 january - 
+ 1. agent will alert the dashboard via firebase

@@ -37,11 +37,11 @@ dev = [
 ]
 
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
 
-[tool.poetry]
-package-mode = false
+[tool.setuptools]
+packages = ["agent", "crawler", "pathway", "sentiment"]
 
 [tool.ruff]
 line-length = 88

@@ -6,7 +6,7 @@ import os
 @dataclass
 class CrawlerConfig:   
     
-    subreddit: str = "IndianStockMarket"
+    subreddit: str = "wallstreetbets"
     base_url: str = "https://www.reddit.com"
     
     max_posts: int = 100  # Maximum number of posts to fetch per crawl

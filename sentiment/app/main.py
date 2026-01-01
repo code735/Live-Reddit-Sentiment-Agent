@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.routes.sentiment import router as sentiment
+from .routes.sentiment import router as sentiment
 
 app = FastAPI(title="reddit fin ai")
 

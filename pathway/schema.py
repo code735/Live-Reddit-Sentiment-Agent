@@ -1,7 +1,7 @@
 import pathway as pw
 
 class RedditSentimentSchema(pw.Schema):
-    event_id: str
+    event_id: str = pw.column_definition(primary_key=True)
     post_id: str
     event_type: str
     ticker: str

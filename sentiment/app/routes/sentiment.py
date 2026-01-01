@@ -1,6 +1,6 @@
 from fastapi import APIRouter
-from app.schemas.sentiment import SentimentRequest, SentimentResponse
-from app.services.sentiment import SentimentService
+from ..schemas.sentiment import SentimentRequest, SentimentResponse
+from ..services.sentiment import SentimentService
 
 router = APIRouter(prefix="/sentiment", tags=["Sentiment"])
 

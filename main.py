@@ -1,9 +1,11 @@
 import os
+import re
 import json
 import uuid
+import time
 import hashlib
 import argparse
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, List, Dict, Any
 from dataclasses import dataclass, asdict
 
@@ -17,25 +19,202 @@ from crawler.database import RedditDatabase
 from sentiment.app.services.sentiment import SentimentService
 
 
-# System prompt for stock ticker extraction
-TICKER_EXTRACTION_PROMPT = """You are a financial text analysis expert. Your task is to identify stock tickers mentioned in Reddit posts and comments.
+# Indian stock ticker mappings for regex-based extraction
+INDIAN_STOCK_MAPPINGS = {
+    # Tata Group
+    r'\b(tcs|tata\s*consultancy)\b': 'TCS',
+    r'\b(tata\s*motors?|tatamotors?)\b': 'TATAMOTORS',
+    r'\b(tata\s*steel|tatasteel)\b': 'TATASTEEL',
+    r'\b(tata\s*power|tatapower)\b': 'TATAPOWER',
+    r'\b(tata\s*elxsi|tataelxsi)\b': 'TATAELXSI',
+    r'\b(trent)\b': 'TRENT',
+    # Reliance
+    r'\b(reliance|ril)\b': 'RELIANCE',
+    r'\b(jio\s*fin|jiofin)\b': 'JIOFIN',
+    # IT Companies
+    r'\b(infosys|infy)\b': 'INFY',
+    r'\b(wipro)\b': 'WIPRO',
+    r'\b(hcl\s*tech|hcltech)\b': 'HCLTECH',
+    r'\b(tech\s*mahindra|techm)\b': 'TECHM',
+    # Banks
+    r'\b(hdfc\s*bank|hdfcbank)\b': 'HDFCBANK',
+    r'\b(icici\s*bank|icicibank)\b': 'ICICIBANK',
+    r'\b(sbi|state\s*bank)\b': 'SBIN',
+    r'\b(axis\s*bank|axisbank)\b': 'AXISBANK',
+    r'\b(kotak|kotakbank)\b': 'KOTAKBANK',
+    r'\b(indusind|indusindbk)\b': 'INDUSINDBK',
+    r'\b(yes\s*bank|yesbank)\b': 'YESBANK',
+    r'\b(bank\s*of\s*baroda|bob|bankbaroda)\b': 'BANKBARODA',
+    r'\b(pnb|punjab\s*national)\b': 'PNB',
+    # Telecom
+    r'\b(airtel|bharti\s*airtel|bhartiartl)\b': 'BHARTIARTL',
+    # Consumer/FMCG
+    r'\b(itc)\b': 'ITC',
+    r'\b(hul|hindustan\s*unilever|hindunilvr)\b': 'HINDUNILVR',
+    r'\b(nestle|nestleind)\b': 'NESTLEIND',
+    r'\b(britannia)\b': 'BRITANNIA',
+    r'\b(asian\s*paints?|asianpaint)\b': 'ASIANPAINT',
+    r'\b(pidilite|pidilitind)\b': 'PIDILITIND',
+    r'\b(titan)\b': 'TITAN',
+    r'\b(dmart|avenue\s*supermarts?)\b': 'DMART',
+    # Auto
+    r'\b(maruti|maruti\s*suzuki)\b': 'MARUTI',
+    r'\b(m&m|mahindra)\b': 'M&M',
+    r'\b(bajaj\s*auto)\b': 'BAJAJ-AUTO',
+    r'\b(hero\s*motocorp|heromotoco)\b': 'HEROMOTOCO',
+    r'\b(tvs\s*motor|tvsmotor)\b': 'TVSMOTOR',
+    r'\b(eicher|eichermot)\b': 'EICHERMOT',
+    # Finance
+    r'\b(bajaj\s*finance|bajfinance)\b': 'BAJFINANCE',
+    r'\b(bajaj\s*finserv|bajajfinsv)\b': 'BAJAJFINSV',
+    r'\b(hdfc\s*life|hdfclife)\b': 'HDFCLIFE',
+    r'\b(icici\s*pru|icicipruli)\b': 'ICICIPRULI',
+    # Pharma
+    r'\b(sun\s*pharma|sunpharma)\b': 'SUNPHARMA',
+    r'\b(dr\s*reddy|drreddy)\b': 'DRREDDY',
+    r'\b(cipla)\b': 'CIPLA',
+    r'\b(zydus|zyduslife)\b': 'ZYDUSLIFE',
+    # Adani
+    r'\b(adani\s*ent|adanient)\b': 'ADANIENT',
+    r'\b(adani\s*ports?|adaniports)\b': 'ADANIPORTS',
+    r'\b(adani\s*green|adanigreen)\b': 'ADANIGREEN',
+    r'\b(adani\s*power|adanipower)\b': 'ADANIPOWER',
+    # Infra/Energy
+    r'\b(l&t|larsen)\b': 'LT',
+    r'\b(power\s*grid|powergrid)\b': 'POWERGRID',
+    r'\b(ntpc)\b': 'NTPC',
+    r'\b(coal\s*india|coalindia)\b': 'COALINDIA',
+    r'\b(ongc)\b': 'ONGC',
+    r'\b(ioc|indian\s*oil)\b': 'IOC',
+    r'\b(bpcl)\b': 'BPCL',
+    # Metals
+    r'\b(vedanta|vedl)\b': 'VEDL',
+    r'\b(jsw\s*steel|jswsteel)\b': 'JSWSTEEL',
+    r'\b(hindalco)\b': 'HINDALCO',
+    r'\b(ultratech|ultracemco)\b': 'ULTRACEMCO',
+    r'\b(grasim)\b': 'GRASIM',
+    # New Age
+    r'\b(zomato)\b': 'ZOMATO',
+    r'\b(paytm|one97)\b': 'PAYTM',
+    r'\b(nykaa)\b': 'NYKAA',
+    r'\b(delhivery)\b': 'DELHIVERY',
+    r'\b(policybazaar|policybzr)\b': 'POLICYBZR',
+    # Electronics
+    r'\b(havells)\b': 'HAVELLS',
+    r'\b(dixon)\b': 'DIXON',
+    r'\b(varun\s*beverages?|vbl)\b': 'VBL',
+    # US Stocks
+    r'\b(tesla|tsla)\b': 'TSLA',
+    r'\b(apple|aapl)\b': 'AAPL',
+    r'\b(microsoft|msft)\b': 'MSFT',
+    r'\b(amazon|amzn)\b': 'AMZN',
+    r'\b(google|googl|alphabet)\b': 'GOOGL',
+    r'\b(meta|facebook)\b': 'META',
+    r'\b(nvidia|nvda)\b': 'NVDA',
+    r'\b(netflix|nflx)\b': 'NFLX',
+    r'\b(amd)\b': 'AMD',
+}
+
+
+# System prompt for stock ticker extraction (optimized for Indian & US stocks)
+TICKER_EXTRACTION_PROMPT = """You are a financial text analysis expert specializing in Indian stock markets. Your task is to identify stock tickers mentioned in Reddit posts and comments.
 
 Given a text about stocks/trading, extract the stock ticker symbol(s) being discussed.
 
+INDIAN STOCK MAPPINGS (NSE/BSE):
+- Tata Consultancy Services / TCS = TCS
+- Tata Motors = TATAMOTORS
+- Tata Steel = TATASTEEL
+- Tata Power = TATAPOWER
+- Tata Consumer = TATACONSUM
+- Tata Elxsi = TATAELXSI
+- Reliance / RIL / Reliance Industries = RELIANCE
+- Infosys / Infy = INFY
+- HDFC Bank = HDFCBANK
+- HDFC Life = HDFCLIFE
+- HDFC AMC = HDFCAMC
+- ICICI Bank = ICICIBANK
+- ICICI Prudential = ICICIPRULI
+- State Bank / SBI = SBIN
+- Axis Bank = AXISBANK
+- Kotak Mahindra Bank / Kotak = KOTAKBANK
+- Bharti Airtel / Airtel = BHARTIARTL
+- Jio Financial = JIOFIN
+- Wipro = WIPRO
+- HCL Tech / HCL Technologies = HCLTECH
+- Tech Mahindra = TECHM
+- L&T / Larsen & Toubro = LT
+- ITC = ITC
+- Asian Paints = ASIANPAINT
+- Maruti Suzuki / Maruti = MARUTI
+- Mahindra & Mahindra / M&M = M&M
+- Bajaj Finance = BAJFINANCE
+- Bajaj Finserv = BAJAJFINSV
+- Bajaj Auto = BAJAJ-AUTO
+- Hindustan Unilever / HUL = HINDUNILVR
+- Nestle India = NESTLEIND
+- Sun Pharma = SUNPHARMA
+- Dr Reddy's = DRREDDY
+- Cipla = CIPLA
+- Adani Enterprises = ADANIENT
+- Adani Ports = ADANIPORTS
+- Adani Green = ADANIGREEN
+- Adani Power = ADANIPOWER
+- Power Grid = POWERGRID
+- NTPC = NTPC
+- Coal India = COALINDIA
+- ONGC = ONGC
+- IOC / Indian Oil = IOC
+- BPCL = BPCL
+- Zomato = ZOMATO
+- Paytm / One97 = PAYTM
+- Nykaa / FSN E-Commerce = NYKAA
+- Delhivery = DELHIVERY
+- Policybazaar / PB Fintech = POLICYBZR
+- IndusInd Bank = INDUSINDBK
+- Yes Bank = YESBANK
+- Bank of Baroda / BoB = BANKBARODA
+- Punjab National Bank / PNB = PNB
+- Vedanta = VEDL
+- JSW Steel = JSWSTEEL
+- Hindalco = HINDALCO
+- UltraTech Cement = ULTRACEMCO
+- Grasim = GRASIM
+- Titan = TITAN
+- Avenue Supermarts / DMart = DMART
+- Britannia = BRITANNIA
+- Pidilite = PIDILITIND
+- Havells = HAVELLS
+- Dixon Technologies = DIXON
+- Varun Beverages = VBL
+- Trent = TRENT
+- Zydus Lifesciences = ZYDUSLIFE
+- Eicher Motors = EICHERMOT
+- Hero MotoCorp = HEROMOTOCO
+- TVS Motor = TVSMOTOR
+
+
 Rules:
-1. Return ONLY valid stock ticker symbols (e.g., TSLA, AAPL, GME, AMC, NVDA)
-2. If the text mentions company names, convert them to their ticker symbols
-3. Common mappings: Tesla=TSLA, Apple=AAPL, Microsoft=MSFT, Amazon=AMZN, Google/Alphabet=GOOGL, Meta/Facebook=META, NVIDIA=NVDA
-4. If multiple tickers are mentioned, return the PRIMARY one being discussed
-5. If no clear stock ticker is found, return "UNKNOWN"
-6. Return ONLY the ticker symbol, nothing else (e.g., "TSLA" not "The ticker is TSLA")
+1. Return ONLY valid stock ticker symbols as used on NSE/BSE (Indian) or NYSE/NASDAQ (US)
+2. If the text mentions company names, nicknames, or abbreviations, convert to official ticker
+3. If multiple tickers are mentioned, return the PRIMARY one being discussed
+4. If no clear stock ticker is found, return "UNKNOWN"
+5. Return ONLY the ticker symbol, nothing else (e.g., "RELIANCE" not "The ticker is RELIANCE")
+6. For Indian stocks, prefer NSE ticker format
 
 Examples:
+- "Reliance is looking strong after AGM" -> RELIANCE
+- "TCS results were amazing, bullish on IT sector" -> TCS
+- "Tata Motors EV play is exciting" -> TATAMOTORS  
+- "HDFC Bank merger with HDFC Ltd complete" -> HDFCBANK
+- "Infosys guidance was weak" -> INFY
+- "Adani stocks recovering after Hindenburg" -> ADANIENT
+- "Nifty IT index down, Wipro and HCL weak" -> WIPRO
+- "Zomato Blinkit growth is insane" -> ZOMATO
 - "TSLA to the moon! 🚀" -> TSLA
-- "Tesla is going to crush earnings" -> TSLA
-- "Bought some GME and AMC today, but GME is my main play" -> GME
 - "The market is crazy today" -> UNKNOWN
-- "TCS looking bullish, Tata Motors also strong" -> TCS
+- "Nifty hitting all time high" -> UNKNOWN
+- "FII selling continues" -> UNKNOWN
 """
 
 
@@ -68,25 +247,67 @@ class StockEvent:
 
 class StockSentimentAnalyzer:
     
-    def __init__(self, gemini_api_key: Optional[str] = None):
+    def __init__(self, gemini_api_key: Optional[str] = None, use_llm: bool = True):
         self.api_key = gemini_api_key or os.environ.get("GEMINI_API_KEY")
-        if not self.api_key:
-            raise ValueError("GEMINI_API_KEY is required. Set it in environment or pass it to the constructor.")
+        self.use_llm = use_llm
         
-        self.gemini_client = genai.Client(api_key=self.api_key)
+        if self.use_llm and not self.api_key:
+            print("Warning: GEMINI_API_KEY not set. Using regex-only ticker extraction.")
+            self.use_llm = False
+        
+        if self.use_llm:
+            self.gemini_client = genai.Client(api_key=self.api_key)
+        else:
+            self.gemini_client = None
+            
         self.sentiment_service = SentimentService()
         self.crawler = RedditCrawler(config)
+        self.last_llm_call = 0
+        self.llm_rate_limit_delay = 15  # seconds between LLM calls (5 req/min = 12s, add buffer)
         
         # Connect to database
         if not self.crawler.connect_database():
             raise ConnectionError("Failed to connect to database")
     
-    def extract_ticker(self, text: str) -> str:
+    def extract_ticker_regex(self, text: str) -> Optional[str]:
+        """Fast regex-based ticker extraction for common Indian and US stocks."""
+        text_lower = text.lower()
+        
+        for pattern, ticker in INDIAN_STOCK_MAPPINGS.items():
+            if re.search(pattern, text_lower, re.IGNORECASE):
+                return ticker
+        
+        # Also check for direct ticker mentions (uppercase, 2-12 chars for Indian tickers)
+        direct_tickers = re.findall(r'\b([A-Z]{2,12}(?:-[A-Z]+)?)\b', text)
+        # Filter for known NSE/BSE format tickers
+        known_tickers = {'TCS', 'INFY', 'RELIANCE', 'HDFCBANK', 'ICICIBANK', 'SBIN', 'WIPRO', 
+                         'ITC', 'BHARTIARTL', 'KOTAKBANK', 'AXISBANK', 'MARUTI', 'TITAN',
+                         'BAJFINANCE', 'HCLTECH', 'TECHM', 'SUNPHARMA', 'HINDUNILVR', 'LT',
+                         'ASIANPAINT', 'NTPC', 'POWERGRID', 'ONGC', 'COALINDIA', 'TATASTEEL',
+                         'TATAMOTORS', 'ADANIENT', 'ADANIPORTS', 'ZOMATO', 'PAYTM', 'NYKAA',
+                         'TSLA', 'AAPL', 'MSFT', 'AMZN', 'GOOGL', 'META', 'NVDA', 'NFLX', 'AMD'}
+        
+        for ticker in direct_tickers:
+            if ticker in known_tickers:
+                return ticker
+        
+        return None
+    
+    def extract_ticker_llm(self, text: str) -> str:
+        """Use Gemini LLM to extract stock ticker (with rate limiting)."""
+        if not self.use_llm or not self.gemini_client:
+            return "UNKNOWN"
+            
+        # Rate limiting
+        time_since_last = time.time() - self.last_llm_call
+        if time_since_last < self.llm_rate_limit_delay:
+            time.sleep(self.llm_rate_limit_delay - time_since_last)
+        
         try:
             messages = [
                 types.Content(
                     role="user", 
-                    parts=[types.Part(text=f"Extract the stock ticker from this text:\n\n{text[:2000]}")]  # Limit text length
+                    parts=[types.Part(text=f"Extract the stock ticker from this text:\n\n{text[:2000]}")]
                 )
             ]
             
@@ -100,19 +321,35 @@ class StockSentimentAnalyzer:
                 )
             )
             
+            self.last_llm_call = time.time()
+            
             if response and response.text:
                 ticker = response.text.strip().upper()
-                # Clean up the ticker - remove any extra text
+                # Clean up - remove any extra text, handle hyphenated tickers
                 ticker = ticker.split()[0] if ticker else "UNKNOWN"
-                # Validate it looks like a ticker (1-5 uppercase letters)
-                if ticker and 1 <= len(ticker) <= 5 and ticker.isalpha():
+                ticker = re.sub(r'[^A-Z0-9\-&]', '', ticker)
+                # Validate it looks like a ticker
+                if ticker and 1 <= len(ticker) <= 15 and ticker != "UNKNOWN":
                     return ticker
             
             return "UNKNOWN"
             
         except Exception as e:
-            print(f"Error extracting ticker: {e}")
+            print(f"Error extracting ticker via LLM: {e}")
             return "UNKNOWN"
+    
+    def extract_ticker(self, text: str) -> str:
+        """Extract stock ticker - tries regex first, then LLM as fallback."""
+        # First try fast regex extraction
+        ticker = self.extract_ticker_regex(text)
+        if ticker:
+            return ticker
+        
+        # Fall back to LLM for complex cases
+        if self.use_llm:
+            return self.extract_ticker_llm(text)
+        
+        return "UNKNOWN"
     
     def analyze_sentiment(self, text: str) -> Dict[str, Any]:
         try:
@@ -133,7 +370,7 @@ class StockSentimentAnalyzer:
         return hashlib.md5(unique_string.encode()).hexdigest()
     
     def process_post(self, post: Dict[str, Any], comments: List[Dict[str, Any]]) -> StockEvent:
-        observed_at = datetime.utcnow().isoformat() + "Z"
+        observed_at = datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
         
         # Combine title and selftext for ticker extraction
         full_text = f"{post.get('title', '')} {post.get('selftext', '')}"
@@ -320,13 +557,18 @@ def main():
         action="store_true",
         help="Print events as JSON to stdout"
     )
+    parser.add_argument(
+        "--no-llm",
+        action="store_true",
+        help="Disable LLM for ticker extraction (use regex only - faster, no rate limits)"
+    )
     
     args = parser.parse_args()
     
     output_file = args.output or "pathway_streams/data_stream/events_latest.jsonl"
     
     try:
-        analyzer = StockSentimentAnalyzer()
+        analyzer = StockSentimentAnalyzer(use_llm=not args.no_llm)
         
         if args.mode == "crawl":
             events = analyzer.crawl_and_process(

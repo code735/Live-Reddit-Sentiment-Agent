@@ -24,3 +24,7 @@ plz see testrun.ipynb to see how to run
 - `is_submitter`, `is_edited`, `created_utc`
 - `content_hash` (for change detection)
 
+
+future improvements -
+1. RAG for finding information on dedicated tickers throughout reddit.
+2. market prediction history 

@@ -2,7 +2,7 @@
 from crawler.crawler import CrawlerConfig
 
 config = CrawlerConfig(
-    subreddit="wallstreetbets",
+    subreddit="stocks",
     max_posts=30,
     max_comments_per_post=100,
     sort_by="new",  # Options: "new", "hot", "top", "rising"

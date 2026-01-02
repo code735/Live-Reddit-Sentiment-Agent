@@ -15,6 +15,6 @@ Rules:
 
 When you are done:
 Return exactly one action:
-- emit_alert(type, confidence, rationale)
+- alert_dashboard(type, confidence, rationale)
 - no_alert(reason)
 """

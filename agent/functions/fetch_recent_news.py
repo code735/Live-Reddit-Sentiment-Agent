@@ -1,6 +1,8 @@
 import feedparser
 from datetime import datetime
 from typing import Dict, List
+from google import genai
+from google.genai import types
 from bs4 import BeautifulSoup
 
 
@@ -73,7 +75,7 @@ def fetch_recent_news(ticker):
 
   for i in range(len(data["headlines"])):
       print("\n")
-      print(f"Article {i}: ")
+      print(f"Article {i+1}: ")
       print("Headline:", data["headlines"][i])
       print("Link:", data["links"][i])
       print("Time:", data["timestamps"][i])
@@ -83,4 +85,20 @@ def fetch_recent_news(ticker):
   return data
 
 
-fetch_recent_news("MAHKTECH")
+# fetch_recent_news("MAHKTECH")
+
+
+schema_fetch_recent_news = types.FunctionDeclaration(
+    name="fetch_recent_news",
+    description="fetches the recent news and reevaluates the sentiment score if the existing information is insufficient and confidence score is low",
+    parameters=types.Schema(
+        type=types.Type.OBJECT,
+        properties={
+            "ticker": types.Schema(
+                type=types.Type.STRING,
+                description="stock ticker",
+                required=["ticker"],
+            )
+        },
+    ),
+)

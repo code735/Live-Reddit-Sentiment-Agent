@@ -85,7 +85,7 @@ def fetch_recent_news(ticker):
   return data
 
 
-# fetch_recent_news("MAHKTECH")
+fetch_recent_news("INFOBEAN")
 
 
 schema_fetch_recent_news = types.FunctionDeclaration(
@@ -97,8 +97,8 @@ schema_fetch_recent_news = types.FunctionDeclaration(
             "ticker": types.Schema(
                 type=types.Type.STRING,
                 description="stock ticker",
-                required=["ticker"],
             )
         },
+        required=["ticker"]
     ),
 )

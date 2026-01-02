@@ -1,8 +1,10 @@
 # Create configuration
 from crawler.crawler import CrawlerConfig
 
+# Indian stock subreddits: IndianStreetBets, IndiaInvestments, DalalStreetTalks
+
 config = CrawlerConfig(
-    subreddit="stocks",
+    subreddit="IndianStreetBets",  # Indian stock market discussions
     max_posts=30,
     max_comments_per_post=100,
     sort_by="new",  # Options: "new", "hot", "top", "rising"

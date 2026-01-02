@@ -1,2 +1,2 @@
 def alert_dashboard(alert_type, confidence, rationale):
-  return 0
+  return "nothing_yet"

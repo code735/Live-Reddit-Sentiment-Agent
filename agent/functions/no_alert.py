@@ -1,17 +1,20 @@
-def no_alert(reason, ticker_obj):
-  return { message: "no alert sorry" }
+from google.genai import types
+
+
+def no_alert(reason):
+  return { message: reason }
 
 schema_no_alert = types.FunctionDeclaration(
-    name="alert_dashboard",
-    description="alerts the dashboard and returns the alert_type, confidence, rationale and ticker_obj",
+    name="no_alert",
+    description="no alert to dashboard just state a reason and it'll print the reason",
     parameters=types.Schema(
         type=types.Type.OBJECT,
         properties={
-            "ticker": types.Schema(
+            "reason": types.Schema(
                 type=types.Type.STRING,
-                description="stock ticker",
+                description="LLM will return a reason for why no alert is required here.",
             )
         },
-        required=["ticker"]
+        required=["reason"]
     ),
 )

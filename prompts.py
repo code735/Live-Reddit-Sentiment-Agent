@@ -28,19 +28,8 @@ Rules:
 - Do not call the same tool with identical parameters more than once.
 - Stop once confidence is high or uncertainty is irreducible.
 
-When finished, return exactly ONE of the following JSON objects and nothing else:
+When finished, ALWAYS call either of these two functions and return some kind of text response..
+-alert_dashboard()
+-no_alert()
 
-alert_dashboard:
-{
-  "action": "alert_dashboard",
-  "type": "<string>",
-  "confidence": <float between 0 and 1>,
-  "rationale": "<short explanation>"
-}
-
-no_alert:
-{
-  "action": "no_alert",
-  "reason": "<short explanation>"
-}
 """

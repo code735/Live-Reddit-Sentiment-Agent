@@ -21,11 +21,11 @@ schema_re_evaluate_sentiment_confidence = types.FunctionDeclaration(
     parameters=types.Schema(
         type=types.Type.OBJECT,
         properties={
-            "ticker": types.Schema(
+            "text": types.Schema(
                 type=types.Type.STRING,
-                description="stock ticker",
+                description="pass news text from fetch_recent_news to re-evaluate the confidence",
             )
         },
-        required=["ticker"]
+        required=["text"]
     ),
 )

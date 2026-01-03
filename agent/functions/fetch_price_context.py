@@ -3,6 +3,7 @@ import statistics
 from dataclasses import dataclass
 from google.genai import types
 
+
 @dataclass
 class PriceContext:
     price_change_1d: float
@@ -18,11 +19,7 @@ def fetch_price_context_indian(ticker: str) -> PriceContext:
     """
 
     df = yf.download(
-        f'{ticker}.ns',
-        period="10d",
-        interval="1d",
-        progress=False,
-        auto_adjust=False
+        f"{ticker}.ns", period="10d", interval="1d", progress=False, auto_adjust=False
     )
 
     if df.empty or len(df) < 8:
@@ -42,8 +39,7 @@ def fetch_price_context_indian(ticker: str) -> PriceContext:
     volume_spike = volumes[-1] > avg_volume * 1.5
 
     returns = [
-        (closes[i] - closes[i - 1]) / closes[i - 1]
-        for i in range(1, len(closes))
+        (closes[i] - closes[i - 1]) / closes[i - 1] for i in range(1, len(closes))
     ]
     volatility = statistics.stdev(returns[-7:])
 
@@ -53,13 +49,13 @@ def fetch_price_context_indian(ticker: str) -> PriceContext:
         volatility_level = "medium"
     else:
         volatility_level = "high"
-
-    return PriceContext(
-        price_change_1d=round(price_change_1d, 2),
-        price_change_7d=round(price_change_7d, 2),
-        volume_spike=volume_spike,
-        volatility_level=volatility_level,
-    )
+        
+    return {
+        "price_change_1d": round(price_change_1d, 2),
+        "price_change_7d": round(price_change_7d, 2),
+        "volume_spike": volume_spike,
+        "volatility_level": volatility_level,
+    }
 
 
 schema_fetch_price_context_indian = types.FunctionDeclaration(
@@ -73,6 +69,6 @@ schema_fetch_price_context_indian = types.FunctionDeclaration(
                 description="stock ticker",
             )
         },
-        required=["ticker"]
+        required=["ticker"],
     ),
 )

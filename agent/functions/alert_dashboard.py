@@ -1,8 +1,8 @@
 from google.genai import types
 
-def alert_dashboard(alert_type, confidence, rationale, ticker_obj):
+def alert_dashboard(alert_type, confidence, rationale):
   # print("ticker_obj from alert",ticker_obj)
-  return {alert_type, confidence, rationale, ticker_obj}
+  return {alert_type, confidence, rationale}
 
 schema_alert_dashboard = types.FunctionDeclaration(
     name="alert_dashboard",
@@ -21,12 +21,8 @@ schema_alert_dashboard = types.FunctionDeclaration(
             "rationale": types.Schema(
                 type=types.Type.STRING,
                 description="Reason for the alert",
-            ),
-            "ticker": types.Schema(
-                type=types.Type.STRING,
-                description="Stock ticker symbol",
-            ),
+            )
         },
-        required=["alert_type", "confidence", "rationale", "ticker"]
+        required=["alert_type", "confidence", "rationale"]
     )
 )

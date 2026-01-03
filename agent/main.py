@@ -48,11 +48,11 @@ available_functions = types.Tool(
 )
 
 FUNCTION_REGISTRY = {
-  "fetch_price_context_indian": fetch_price_context_indian,
-  "fetch_recent_news": fetch_recent_news,
-  "re_evaluate_sentiment_confidence": re_evaluate_sentiment_confidence,
-  "alert_dashboard": alert_dashboard,
-  "no_alert": no_alert
+    "fetch_price_context_indian": fetch_price_context_indian,
+    "fetch_recent_news": fetch_recent_news,
+    "re_evaluate_sentiment_confidence": re_evaluate_sentiment_confidence,
+    "alert_dashboard": alert_dashboard,
+    "no_alert": no_alert,
 }
 
 
@@ -79,9 +79,11 @@ def execute_function_call(fc):
         raise ValueError(f"Unknown function: {fn_name}")
 
     fn = FUNCTION_REGISTRY[fn_name]
-
-    # Call the actual Python function
     result = fn(**fn_args)
+
+    # ✅ ensure result is never None
+    if result is None:
+        result = {"reason": "default fallback"}
 
     return fn_name, result
 
@@ -113,7 +115,12 @@ def agent_tool_call_loop(client, messages, max_iterations=20, verbose=False):
             # 🔴 CASE 1: model wants tools
             if function_calls:
                 for fc in function_calls:
-                    print("Calling function:", fc.name)   # ← prints the function being called
+                    print("Calling function:", fc.name)
+                    # print("response:", response)
+                    print(response.text)
+                    print("prompt tokens: ", response.usage_metadata.prompt_token_count)
+                    print("response tokes: ", response.usage_metadata.candidates_token_count)
+                    # ← prints the function being called
                     name, result = execute_function_call(fc)
 
                     tool_part = types.Part(
@@ -131,6 +138,26 @@ def agent_tool_call_loop(client, messages, max_iterations=20, verbose=False):
                     )
 
                 continue  # ← let the model think again
+
+            # if not any(
+            #     fc.name in ["alert_dashboard", "no_alert"] for fc in function_calls
+            # ):
+            #     name = "no_alert"
+            #     result = "reason"
+            #     # Fallback if model didn’t choose either
+            #     messages.append(
+            #         types.Content(
+            #             role="tool",
+            #             parts=[
+            #                 types.Part(
+            #                     function_response=types.FunctionResponse(
+            #                         name=name,
+            #                         response=result
+            #                     )
+            #                 )
+            #             ],
+            #         )
+            #     )
 
             # 🟢 CASE 2: no function calls → text is final
             if response.text:

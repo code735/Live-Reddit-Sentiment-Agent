@@ -27,9 +27,6 @@ Rules:
 - Prefer fewer tool calls.
 - Do not call the same tool with identical parameters more than once.
 - Stop once confidence is high or uncertainty is irreducible.
-
-When finished, ALWAYS call either of these two functions and return some kind of text response..
--alert_dashboard()
--no_alert()
+- ALWAYS call either alert_dashboard() or no_alert() in all cases 
 
 """

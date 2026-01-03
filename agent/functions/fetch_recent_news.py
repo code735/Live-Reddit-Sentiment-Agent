@@ -32,7 +32,7 @@ def fetch_context_for_stock(stock: str) -> Dict[str, List]:
     short_summaries: List[str] = []
     links: List[str] = []
 
-    for entry in feed.entries[:10]:  # limit noise
+    for entry in feed.entries[:5]:  # limit noise
         # Headline
         headlines.append(entry.get("title", "Unknown headline"))
 
@@ -73,24 +73,24 @@ def fetch_context_for_stock(stock: str) -> Dict[str, List]:
 def fetch_recent_news(ticker):
   data = fetch_context_for_stock(ticker)
 
-  for i in range(len(data["headlines"])):
-      print("\n")
-      print(f"Article {i+1}: ")
-      print("Headline:", data["headlines"][i])
-      print("Link:", data["links"][i])
-      print("Time:", data["timestamps"][i])
-      print("Credibility:", data["source_credibility"][i])
-      print("Summary:", data["short_summaries"][i])
+  # for i in range(len(data["headlines"])):
+  #     print("\n")
+  #     print(f"Article {i+1}: ")
+  #     print("Headline:", data["headlines"][i])
+  #     print("Link:", data["links"][i])
+  #     print("Time:", data["timestamps"][i])
+  #     print("Credibility:", data["source_credibility"][i])
+  #     print("Summary:", data["short_summaries"][i])
 
   return data
 
 
-fetch_recent_news("INFOBEAN")
+# fetch_recent_news("RADHIKAJWE")
 
 
 schema_fetch_recent_news = types.FunctionDeclaration(
     name="fetch_recent_news",
-    description="fetches the recent news and reevaluates the sentiment score if the existing information is insufficient and confidence score is low",
+    description="fetches the recent news from rss feeds",
     parameters=types.Schema(
         type=types.Type.OBJECT,
         properties={

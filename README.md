@@ -27,4 +27,5 @@ plz see testrun.ipynb to see how to run
 
 future improvements -
 1. RAG for finding information on dedicated tickers throughout reddit.
-2. market prediction history 
+2. market prediction history
+3. accept gemini_api_key from user.

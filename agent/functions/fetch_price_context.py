@@ -17,7 +17,7 @@ def fetch_price_context_indian(ticker: str) -> PriceContext:
     """
 
     df = yf.download(
-        ticker,
+        f'{ticker}.ns',
         period="10d",
         interval="1d",
         progress=False,
@@ -61,4 +61,17 @@ def fetch_price_context_indian(ticker: str) -> PriceContext:
     )
 
 
-print(fetch_price_context_indian("ITC.NS"))
+schema_fetch_price_context_indian = types.FunctionDeclaration(
+    name="fetch_price_context_indian",
+    description="fetches the volume spikes, price change for 1 day and 7day, and volatility_level",
+    parameters=types.Schema(
+        type=types.Type.OBJECT,
+        properties={
+            "ticker": types.Schema(
+                type=types.Type.STRING,
+                description="stock ticker",
+            )
+        },
+        required=["ticker"]
+    ),
+)

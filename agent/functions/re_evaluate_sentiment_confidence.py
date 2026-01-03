@@ -1,5 +1,6 @@
-from fetch_recent_news import fetch_recent_news
+from .fetch_recent_news import fetch_recent_news
 from sentiment.app.services.sentiment import SentimentService
+from google.genai import types
 
 service = SentimentService()
 

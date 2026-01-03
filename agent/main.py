@@ -4,10 +4,10 @@ from google import genai
 from google.genai import types
 import argparse
 from prompts import system_prompt
-from functions import fetch_recent_news, schema_fetch_recent_news
-from functions import fetch_price_context_indian, schema_fetch_price_context_indian
-from functions import re_evaluate_sentiment_confidence, schema_re_evaluate_sentiment_confidence
-from functions import alert_dashboard, schema_alert_dashboard
+from agent.functions.fetch_recent_news import fetch_recent_news, schema_fetch_recent_news
+from agent.functions.fetch_price_context import fetch_price_context_indian, schema_fetch_price_context_indian
+from agent.functions.re_evaluate_sentiment_confidence import re_evaluate_sentiment_confidence, schema_re_evaluate_sentiment_confidence
+from agent.functions.alert_dashboard import alert_dashboard, schema_alert_dashboard
 
 load_dotenv()
 api_key = os.environ.get("GEMINI_API_KEY")
@@ -27,7 +27,7 @@ messages = [
   types.Content(role="user", parts=[types.Part(text=user_prompt)]),
 ]
 
-available_functions = type.Tool(
+available_functions = types.Tool(
   function_declarations=[
     schema_fetch_recent_news,
     schema_fetch_price_context_indian,

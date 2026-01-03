@@ -1,6 +1,7 @@
 import yfinance as yf
 import statistics
 from dataclasses import dataclass
+from google.genai import types
 
 @dataclass
 class PriceContext:

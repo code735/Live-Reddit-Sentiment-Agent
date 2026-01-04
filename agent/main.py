@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 import argparse
+import traceback
 from prompts import system_prompt
 from agent.functions.fetch_recent_news import (
     fetch_recent_news,
@@ -70,25 +71,24 @@ def extract_function_calls(response):
 
     return calls
 
-
 def execute_function_call(fc):
     fn_name = fc.name
-    fn_args = fc.args or {}
+    fn_args = fc.args
+
+    print(f'fn_args: {fn_args}')
+    print(f'fn_name: {fn_name}')
 
     if fn_name not in FUNCTION_REGISTRY:
         raise ValueError(f"Unknown function: {fn_name}")
 
     fn = FUNCTION_REGISTRY[fn_name]
-    result = fn(**fn_args)
 
-    # ✅ ensure result is never None
-    if result is None:
-        result = {"reason": "default fallback"}
-
+    result = fn(**fn_args)       
     return fn_name, result
 
 
-def agent_tool_call_loop(client, messages, max_iterations=20, verbose=False):
+
+def agent_tool_call_loop(client, messages, max_iterations=6, verbose=False):
     for i in range(max_iterations):
         try:
             response = client.models.generate_content(
@@ -107,10 +107,11 @@ def agent_tool_call_loop(client, messages, max_iterations=20, verbose=False):
                 )
 
             # Add model responses to conversation
-            for candidate in response.candidates:
+            if response.candidates:
+              for candidate in response.candidates:
                 messages.append(candidate.content)
 
-            function_calls = extract_function_calls(response)
+              function_calls = extract_function_calls(response)
 
             # 🔴 CASE 1: model wants tools
             if function_calls:
@@ -121,7 +122,12 @@ def agent_tool_call_loop(client, messages, max_iterations=20, verbose=False):
                     print("prompt tokens: ", response.usage_metadata.prompt_token_count)
                     print("response tokes: ", response.usage_metadata.candidates_token_count)
                     # ← prints the function being called
+
+
                     name, result = execute_function_call(fc)
+
+                    if fc.name == "no_alert" or fc.name == "alert_dashboard": 
+                      return
 
                     tool_part = types.Part(
                         function_response=types.FunctionResponse(
@@ -139,27 +145,6 @@ def agent_tool_call_loop(client, messages, max_iterations=20, verbose=False):
 
                 continue  # ← let the model think again
 
-            # if not any(
-            #     fc.name in ["alert_dashboard", "no_alert"] for fc in function_calls
-            # ):
-            #     name = "no_alert"
-            #     result = "reason"
-            #     # Fallback if model didn’t choose either
-            #     messages.append(
-            #         types.Content(
-            #             role="tool",
-            #             parts=[
-            #                 types.Part(
-            #                     function_response=types.FunctionResponse(
-            #                         name=name,
-            #                         response=result
-            #                     )
-            #                 )
-            #             ],
-            #         )
-            #     )
-
-            # 🟢 CASE 2: no function calls → text is final
             if response.text:
                 if verbose:
                     print("Final response:")
@@ -172,6 +157,7 @@ def agent_tool_call_loop(client, messages, max_iterations=20, verbose=False):
 
         except Exception as e:
             print(f"Error: {e}")
+            traceback.print_exc()
             return None
 
     print(f"Reached maximum iterations ({max_iterations}).")

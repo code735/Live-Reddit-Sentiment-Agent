@@ -25,15 +25,16 @@ api_key = os.environ.get("GEMINI_API_KEY")
 
 client = genai.Client(api_key=api_key)
 
-parser = argparse.ArgumentParser(
-    description="Takes a question or a prompt from user as a command line argument"
-)
-parser.add_argument("--verbose", action="store_true")
-parser.add_argument("user_prompt", help="user prompt")
+# parser = argparse.ArgumentParser(
+#     description="Takes a question or a prompt from user as a command line argument"
+# )
+# parser.add_argument("--verbose", action="store_true")
+# parser.add_argument("user_prompt", help="user prompt")
 
-args = parser.parse_args()
+# args = parser.parse_args()
 
-user_prompt = args.user_prompt
+# user_prompt = args.user_prompt
+user_prompt = ""
 
 messages = [
     types.Content(role="user", parts=[types.Part(text=user_prompt)]),
@@ -164,7 +165,11 @@ def agent_tool_call_loop(client, messages, max_iterations=6, verbose=False):
     return None
 
 
-agent_tool_call_loop(client, messages)
+# agent_tool_call_loop(client, messages)
+
+def on_new_rows():
+  print("Triggered from other file!")
+
 
 
 # print("model response: ", response.text)

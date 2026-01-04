@@ -1,7 +1,6 @@
 import pathway as pw
 import os
 from .schema import RedditSentimentSchema
-from agent.main import on_new_rows
 
 print("Pathway version:", pw.__version__)
 print(os.getcwd())
@@ -20,5 +19,4 @@ latest_table = table.groupby(table.post_id).reduce(
 filtered_table = table.filter(table.ticker != "UNKNOWN")
 
 pw.io.csv.write(filtered_table, "./output.csv")
-pw.io.subscribe(filtered_table, on_new_rows)
 pw.run()

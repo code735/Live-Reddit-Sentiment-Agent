@@ -1,8 +1,8 @@
 from google.genai import types
 
 
-def no_alert(reason):
-    return reason
+def no_alert(reason: str):
+    return {"reason" : reason}
 
 # print(no_alert("reason"))
 

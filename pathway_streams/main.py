@@ -1,6 +1,6 @@
 import pathway as pw
 import os
-from schema import RedditSentimentSchema
+from .schema import RedditSentimentSchema
 
 print("Pathway version:", pw.__version__)
 print(os.getcwd())

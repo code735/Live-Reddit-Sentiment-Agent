@@ -2,7 +2,17 @@ from google.genai import types
 
 def alert_dashboard(alert_type, confidence, rationale):
   # print("ticker_obj from alert",ticker_obj)
-  return {alert_type, confidence, rationale}
+  print('alert_dashboard called')
+  print(f"alert_type:{alert_type}")
+  print(f"confidence:{confidence}")
+  print(f"rationale:{rationale}")
+  return {
+    "alert_type": alert_type,
+    "confidence": confidence,
+    "rationale": rationale,
+  }
+
+# print(alert_dashboard("test_alert",0.5,"neutral") )
 
 schema_alert_dashboard = types.FunctionDeclaration(
     name="alert_dashboard",

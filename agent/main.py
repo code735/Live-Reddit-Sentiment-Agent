@@ -1,6 +1,8 @@
 import os
 from dotenv import load_dotenv
 from google import genai
+import csv
+import time
 from google.genai import types
 import argparse
 import traceback
@@ -167,11 +169,19 @@ def agent_tool_call_loop(client, messages, max_iterations=6, verbose=False):
 
 # agent_tool_call_loop(client, messages)
 
-def on_new_rows():
-  print("Triggered from other file!")
 
+def read_csv_file_live():
+  with open("./output.csv", "r") as f:
+    reader = csv.reader(f)
+    header = next(reader)
 
+    while True:
+      for row in reader:
+        agent_tool_call_loop(client,row)
+        print(row)
+      time.sleep(1)
 
+read_csv_file_live()
 # print("model response: ", response.text)
 # print("prompt tokens: ", response.usage_metadata.prompt_token_count)
 # print("response tokes: ", response.usage_metadata.candidates_token_count)

@@ -21,6 +21,9 @@
 4 January - 
 
   1. no_alert argument issue fix
+
+
+5 january - 
   2. read lines from output.csv.
   3. apis for frontend
   4. migration file setup

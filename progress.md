@@ -19,17 +19,19 @@
 4 January - 
 
   1. no_alert argument and alert_dashboard issue fix - done
-  2. read lines from output.csv.
-  3. single script to run all environments ( pathway, venv, agent ) everything should be glued together
 
 
 5 January -
-  1. apis for frontend
-  2. SQL migration file setup
+  2. read lines from output.csv - done
 
+
+6 Janyary - 
+  3. single script to run all environments ( pathway, venv, agent ) everything should be glued together
 
 todo:
   1. create instructions to start a project
   2. update documentation according to updated architecture
   3. add this project in prathm.dev documentation
   4. add csv's for better ticker extraction
+  1. apis for frontend
+  2. SQL migration file setup

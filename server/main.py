@@ -1,9 +1,19 @@
 from fastapi import FastAPI
-from app.api.health import router as health_router
+from contextlib import asynccontextmanager
+import asyncio
+from pw import run
 
-app = FastAPI(
-    title="reddit based stock prediction system",
-    version="0.1.0",
-)
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    stop_event = asyncio.Event()
 
-app.include_router(health_router)
+    # start once
+    task = asyncio.create_task(run(stop_event))
+
+    yield  # server is running
+
+    # shutdown
+    stop_event.set()
+    await task  # clean exit
+
+app = FastAPI(lifespan=lifespan)

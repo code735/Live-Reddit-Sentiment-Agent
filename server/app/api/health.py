@@ -1,7 +1,14 @@
-from fastapi import APIRouter
+from fastapi import FastAPI
+from contextlib import asynccontextmanager
+import asyncio
+from pw import run
 
-router = APIRouter(prefix="/health", tags=["health"])
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    asyncio.create_task(run())
 
-@router.get("")
-def health_check():
-    return {"status": "ok"}
+    yield  # 3️⃣ server is now ready and accepting requests
+
+    # (optional) shutdown logic here
+
+app = FastAPI(lifespan=lifespan)

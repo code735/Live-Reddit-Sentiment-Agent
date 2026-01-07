@@ -1,14 +1,20 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 import asyncio
-from pw import run
+import logging
+from pw import run 
+
+logging.basicConfig(level=logging.INFO)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    asyncio.create_task(run())
-
-    yield  # 3️⃣ server is now ready and accepting requests
-
-    # (optional) shutdown logic here
+    logging.info("Starting Pathway in background...")
+    asyncio.create_task(asyncio.to_thread(run)) 
+    yield
+    logging.info("Shutdown complete")
 
 app = FastAPI(lifespan=lifespan)
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}

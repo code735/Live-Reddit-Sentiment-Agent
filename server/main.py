@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 import asyncio
-from pw import run
+from .pw import run
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -10,7 +10,13 @@ async def lifespan(app: FastAPI):
     # start once
     task = asyncio.create_task(run(stop_event))
 
-    yield  # server is running
+
+    @app.get("/health")
+    def health():
+        return {"status": "ok"}
+    
+    yield
+
 
     # shutdown
     stop_event.set()

@@ -11,9 +11,9 @@ async def lifespan(app: FastAPI):
     task = asyncio.create_task(run(stop_event))
 
 
-    @app.get("/health")
-    def health():
-        return {"status": "ok"}
+    # @app.get("/health")
+    # def health():
+    #     return {"status": "ok"}
     
     yield
 

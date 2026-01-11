@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from routes import tickers
+from .routes import tickers
 
 api_router = APIRouter()
 

@@ -1,6 +1,6 @@
 from fastapi import FastAPI, APIRouter
 from contextlib import asynccontextmanager
-from router import api_router
+from .router import api_router
 import asyncio
 from .pw import run
 

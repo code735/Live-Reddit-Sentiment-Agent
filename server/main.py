@@ -1,5 +1,6 @@
 from fastapi import FastAPI, APIRouter
 from contextlib import asynccontextmanager
+from router import api_router
 import asyncio
 from .pw import run
 
@@ -23,4 +24,4 @@ async def lifespan(app: FastAPI):
     await task  # clean exit
 
 app = FastAPI(lifespan=lifespan)
-api_router = APIRouter()
+app.include_router(api_router)

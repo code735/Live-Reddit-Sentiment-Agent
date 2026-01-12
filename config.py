@@ -5,7 +5,7 @@ from crawler.crawler import CrawlerConfig
 
 config = CrawlerConfig(
     subreddit="IndianStreetBets",  # Indian stock market discussions
-    max_posts=30,
+    max_posts=5,
     max_comments_per_post=100,
     sort_by="new",  # Options: "new", "hot", "top", "rising"
     request_delay=2.0,

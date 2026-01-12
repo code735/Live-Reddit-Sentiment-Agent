@@ -181,7 +181,7 @@ def read_csv_file_live():
         print(row)
       time.sleep(1)
 
-read_csv_file_live()
+# read_csv_file_live()
 # print("model response: ", response.text)
 # print("prompt tokens: ", response.usage_metadata.prompt_token_count)
 # print("response tokes: ", response.usage_metadata.candidates_token_count)

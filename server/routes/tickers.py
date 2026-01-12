@@ -9,3 +9,7 @@ def get_users():
   return {
     "message": "successfully calculated sentiment and added in output"
   }
+
+
+
+  # start crawler -> get output in output.csv -> then trigger read_csv_file_live()

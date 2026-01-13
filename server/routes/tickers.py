@@ -10,11 +10,11 @@ def get_users():
     "message": "successfully calculated sentiment and added in output"
   }
 
-@router.get("/crawler")
+@router.get("/start-crawler")
 def get_users():
   read_csv_file_live()
   return {
-    "message": "successfully calculated sentiment and added in output"
+    "message": "successfully crawled"
   }
 
 

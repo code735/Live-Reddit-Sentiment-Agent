@@ -247,7 +247,7 @@ class StockEvent:
 
 class StockSentimentAnalyzer:
 
-    def __init__(self, gemini_api_key: Optional[str] = None, use_llm: bool = True):
+    def __init__(self, gemini_api_key: Optional[str] = None, use_llm: bool = False):
         self.api_key = gemini_api_key or os.environ.get("GEMINI_API_KEY")
         self.use_llm = use_llm
 

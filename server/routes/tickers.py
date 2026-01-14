@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 from agent.main import read_csv_file_live
+from main import main
 
 router = APIRouter()
 
@@ -11,8 +12,7 @@ def get_users():
   }
 
 @router.get("/start-crawler")
-def get_users():
-  read_csv_file_live()
+def get_crawler():
   return {
     "message": "successfully crawled"
   }

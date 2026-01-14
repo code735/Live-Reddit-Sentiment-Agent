@@ -659,5 +659,65 @@ def main():
         raise
 
 
-if __name__ == "__main__":
-    main()
+def crawler():
+    load_dotenv()
+
+    # Defaults (formerly CLI args)
+    mode = "crawl"          # or "crawl"
+    subreddit = "IndianStreetBets"        # uses config.subreddit internally
+    limit = 5
+    output_file = "pathway_streams/data_stream/events_latest.jsonl"
+    verbose = False
+    print_json = False
+    use_llm = False          # equivalent to --no-llm = False
+
+    try:
+        analyzer = StockSentimentAnalyzer(use_llm=use_llm)
+
+        if mode == "crawl":
+            events = analyzer.crawl_and_process(
+                subreddit=subreddit,
+                max_posts=limit,
+                output_file=output_file,
+                verbose=verbose,
+            )
+        else:
+            events = analyzer.fetch_and_process_posts(
+                subreddit=subreddit,
+                limit=limit,
+                output_file=output_file,
+                verbose=verbose,
+            )
+
+        if print_json:
+            for event in events:
+                print(json.dumps(event.to_dict(), indent=2))
+
+        if verbose:
+            print(f"\n{'=' * 50}")
+            print(f"Processed {len(events)} posts")
+
+            tickers = {}
+            sentiments = {"positive": 0, "neutral": 0, "negative": 0}
+
+            for event in events:
+                tickers[event.ticker] = tickers.get(event.ticker, 0) + 1
+                sentiments[event.sentiment] = sentiments.get(event.sentiment, 0) + 1
+
+            print("\nTop Tickers:")
+            for ticker, count in sorted(tickers.items(), key=lambda x: -x[1])[:10]:
+                print(f"  {ticker}: {count}")
+
+            print("\nSentiment Distribution:")
+            for sentiment, count in sentiments.items():
+                pct = (count / len(events) * 100) if events else 0
+                print(f"  {sentiment}: {count} ({pct:.1f}%)")
+
+        analyzer.close()
+
+    except Exception as e:
+        print(f"Error: {e}")
+        raise
+
+
+crawler()

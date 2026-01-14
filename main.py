@@ -5,6 +5,7 @@ import uuid
 import time
 import hashlib
 import argparse
+import csv
 from datetime import datetime, timezone
 from typing import Optional, List, Dict, Any
 from dataclasses import dataclass, asdict
@@ -272,6 +273,19 @@ class StockSentimentAnalyzer:
         # Connect to database
         if not self.crawler.connect_database():
             raise ConnectionError("Failed to connect to database")
+
+    def extract_ticker_from_csv(path,index):
+      values = []
+
+      with open(path, newline= "", encoding="utf-8") as f:
+        reader = csv.reader(f)
+        next(reader) # skip header
+        for row in reader:
+          values.append(row[index])
+
+      return values
+
+
 
     def extract_ticker_regex(self, text: str) -> Optional[str]:
         """Fast regex-based ticker extraction for common Indian and US stocks."""
@@ -663,7 +677,7 @@ def crawler():
     load_dotenv()
 
     # Defaults (formerly CLI args)
-    mode = "crawl"          # or "crawl"
+    mode = "crawl"          # or "fetch"
     subreddit = "IndianStreetBets"        # uses config.subreddit internally
     limit = 5
     output_file = "pathway_streams/data_stream/events_latest.jsonl"

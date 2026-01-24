@@ -727,11 +727,23 @@ def crawler():
                 pct = (count / len(events) * 100) if events else 0
                 print(f"  {sentiment}: {count} ({pct:.1f}%)")
 
+        return {
+          "message": "success",
+          "mode": mode,
+          "subreddit": subreddit,
+          "limit": limit,
+        }
         analyzer.close()
 
     except Exception as e:
         print(f"Error: {e}")
+        return {
+          "message": f"error crawling subreddit: {subreddit}",
+          "mode": mode,
+          "subreddit": subreddit,
+          "limit": limit,
+        }
         raise
 
 
-crawler()
+# crawler()

@@ -673,13 +673,15 @@ def main():
         raise
 
 
-def crawler():
+def crawler(subreddit, limit):
     load_dotenv()
 
     # Defaults (formerly CLI args)
+    # subreddit = "IndianStreetBets"        # uses config.subreddit internally
+    # limit = 5
     mode = "crawl"          # or "fetch"
-    subreddit = "IndianStreetBets"        # uses config.subreddit internally
-    limit = 5
+    subreddit = subreddit        # uses config.subreddit internally
+    limit = limit
     output_file = "pathway_streams/data_stream/events_latest.jsonl"
     verbose = False
     print_json = False

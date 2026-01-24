@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 from agent.main import read_csv_file_live
 from main import main, crawler
+from server.model.ticker import crawlerConfig
 
 router = APIRouter()
 
@@ -11,9 +12,13 @@ def get_users():
     "message": "successfully calculated sentiment and added in output"
   }
 
-@router.get("/start-crawler")
-def get_crawler():
-  response = crawler()
+@router.post("/start-crawler")
+def get_crawler(_crawlerConfig: crawlerConfig):
+
+  subreddit = _crawlerConfig.subreddit
+  limit = _crawlerConfig.limit
+
+  response = crawler(subreddit=subreddit, limit=limit)
   return response
 
 

@@ -29,6 +29,7 @@
   3. single script to run all environments ( pathway, venv, agent ) everything should be glued together
 
 todo:
+  1. only crawl post that are unique by post_id
   1. setup approuter
   1. create instructions to start a project
   2. update documentation according to updated architecture

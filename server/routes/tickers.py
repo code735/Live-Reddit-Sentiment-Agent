@@ -13,10 +13,8 @@ def get_users():
 
 @router.get("/start-crawler")
 def get_crawler():
-  crawler()
-  return {
-    "message": "successfully crawled"
-  }
+  response = crawler()
+  return response
 
 
 

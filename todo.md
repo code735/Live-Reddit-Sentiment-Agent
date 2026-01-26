@@ -1,3 +1,2 @@
 1. start crawler on /ticker/start-crawler
-  
-  1. 
+2. only crawl post that are unique by post_id

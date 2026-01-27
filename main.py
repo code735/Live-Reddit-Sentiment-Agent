@@ -569,10 +569,34 @@ class StockSentimentAnalyzer:
             verbose=verbose,
         )
 
+    # def write_events_to_jsonl(self, events: List[StockEvent], output_file: str):
+    #     with open(output_file, "a", encoding="utf-8") as f:
+    #         for event in events:
+    #             f.write(json.dumps(event.to_dict(), ensure_ascii=False) + "\n")
+
+
     def write_events_to_jsonl(self, events: List[StockEvent], output_file: str):
-        with open(output_file, "a", encoding="utf-8") as f:
-            for event in events:
-                f.write(json.dumps(event.to_dict(), ensure_ascii=False) + "\n")
+      existing_post_ids = set()
+
+      # Load existing post_ids if file already exists
+      if os.path.exists(output_file):
+          with open(output_file, "r", encoding="utf-8") as f:
+              for line in f:
+                  try:
+                      data = json.loads(line)
+                      if "post_id" in data:
+                          existing_post_ids.add(data["post_id"])
+                  except json.JSONDecodeError:
+                      continue  # skip malformed lines safely
+
+      # Append only new events
+      with open(output_file, "a", encoding="utf-8") as f:
+          for event in events:
+              post_id = event.post_id  # or event.to_dict()["post_id"]
+
+              if post_id not in existing_post_ids:
+                  f.write(json.dumps(event.to_dict(), ensure_ascii=False) + "\n")
+                  existing_post_ids.add(post_id)  # prevent duplicates within same batch
 
     def close(self):
         if self.crawler:

@@ -6,11 +6,28 @@ We propose a live agentic system that continuously ingests Reddit discussions, u
 
 ---
 
+## Setup
+1. Install Python 3.12 (required by `pyproject.toml`).
+2. Create and activate a virtual environment:
+```bash
+python3.12 -m venv .venv
+source .venv/bin/activate
+```
+3. Install dependencies:
+```bash
+pip install -e .
+```
+4. Optional (Gemini-backed sentiment):
+```bash
+cp sentiment/.env.example sentiment/.env
+```
+Set `GEMINI_API_KEY` in `sentiment/.env`.
 
-HOW to run - 
-
-1. after cloning the repo and installing all the dependecies
-2. run uvicorn server.main:app
+## Run
+1. Start the API server:
+```bash
+uvicorn server.main:app
+```
 
 ## Reddit Crawler
 
